@@ -19,14 +19,14 @@ const userRouter = Router();
 
 userRouter.post(
     "/signup",
-    validationMiddleware(signUpSchema),
+    errorHandling(validationMiddleware(signUpSchema)),
     errorHandling(checkDataExist),
     errorHandling(userController.signUp)
 );
 
 userRouter.post(
     "/login",
-    validationMiddleware(signInSchema),
+    errorHandling(validationMiddleware(signInSchema)),
     errorHandling(userController.signIn)
 );
 
@@ -39,7 +39,7 @@ userRouter.post(
 userRouter.put(
     "/update",
     errorHandling(authMiddleware()),
-    validationMiddleware(updatedAccountSchema),
+    errorHandling(validationMiddleware(updatedAccountSchema)),
     errorHandling(checkDataExist),
     errorHandling(userController.updatedAccount)
 );
@@ -51,13 +51,13 @@ userRouter.get(
 
 userRouter.post(
     "/forget-password",
-    validationMiddleware(forgetPasswordSchema),
+    errorHandling(validationMiddleware(forgetPasswordSchema)),
     errorHandling(userController.forgetPassword)
 );
 
 userRouter.post(
     "/reset-password",
-    validationMiddleware(resetPasswordSchema),
+    errorHandling(validationMiddleware(resetPasswordSchema)),
     errorHandling(userController.resetPassword)
 );
 
@@ -75,21 +75,22 @@ userRouter.get(
 
 userRouter.get(
     "/profile-data/:_id",
-    validationMiddleware(getProfileDataSchema),
+    errorHandling(validationMiddleware(getProfileDataSchema)),
     errorHandling(userController.getProfileData)
 );
 
 userRouter.put(
     "/update-password",
     errorHandling(authMiddleware()),
-    validationMiddleware(updatedPasswordSchema),
+    errorHandling(validationMiddleware(updatedPasswordSchema)),
     errorHandling(userController.updatedPassword)
 );
 
 userRouter.get(
     "/list-account",
     errorHandling(authMiddleware()),
-    validationMiddleware(allAccountSchema),
+    errorHandling(validationMiddleware(allAccountSchema)),
     errorHandling(userController.allAccount)
 );
+
 export default userRouter;

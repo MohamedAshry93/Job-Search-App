@@ -2,7 +2,7 @@ import ErrorHandlerClass from "../Utils/error-class.utils.js";
 
 const errorHandling = (API) => {
     return (req, res, next) => {
-        API(req, res, next).catch((err) => {
+        API(req, res, next)?.catch((err) => {
             console.log("Error in async handling middleware", err);
             const insights = {
                 error: "unhandled API error",

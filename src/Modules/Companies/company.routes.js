@@ -19,7 +19,7 @@ companyRouter.post(
     "/add-company",
     errorHandling(authMiddleware()),
     errorHandling(authorizationMiddleware(roles.COMPANY_ROLES_HR)),
-    validationMiddleware(addCompanySchema),
+    errorHandling(validationMiddleware(addCompanySchema)),
     errorHandling(companyController.addCompany)
 );
 
@@ -27,7 +27,7 @@ companyRouter.put(
     "/update-company/:_id",
     errorHandling(authMiddleware()),
     errorHandling(authorizationMiddleware(roles.COMPANY_ROLES_HR)),
-    validationMiddleware(updatedCompanySchema),
+    errorHandling(validationMiddleware(updatedCompanySchema)),
     errorHandling(companyController.updatedCompany)
 );
 
@@ -35,7 +35,7 @@ companyRouter.delete(
     "/delete-company/:_id",
     errorHandling(authMiddleware()),
     errorHandling(authorizationMiddleware(roles.COMPANY_ROLES_HR)),
-    validationMiddleware(deletedCompanySchema),
+    errorHandling(validationMiddleware(deletedCompanySchema)),
     errorHandling(companyController.deletedCompany)
 );
 
@@ -43,7 +43,7 @@ companyRouter.get(
     "/company-data/:_id",
     errorHandling(authMiddleware()),
     errorHandling(authorizationMiddleware(roles.COMPANY_ROLES_HR)),
-    validationMiddleware(getCompanyDataSchema),
+    errorHandling(validationMiddleware(getCompanyDataSchema)),
     errorHandling(companyController.getCompanyData)
 );
 
@@ -51,7 +51,7 @@ companyRouter.get(
     "/get-company",
     errorHandling(authMiddleware()),
     errorHandling(authorizationMiddleware(roles.COMPANY_ROLES_HR_USER)),
-    validationMiddleware(getCompanySchema),
+    errorHandling(validationMiddleware(getCompanySchema)),
     errorHandling(companyController.getCompany)
 );
 

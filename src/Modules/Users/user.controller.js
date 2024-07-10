@@ -18,10 +18,10 @@ const signUp = async (req, res, next) => {
         role,
         status,
     } = req.body;
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, +process.env.SALT_ROUNDS);
     const hashedConfirmPassword = bcrypt.hashSync(
         confirmPassword,
-        process.env.SALT_ROUNDS
+        +process.env.SALT_ROUNDS
     );
     const userInstance = new User({
         firstName,
@@ -289,10 +289,10 @@ const getProfileData = async (req, res, next) => {
 const updatedPassword = async (req, res, next) => {
     const { password, confirmPassword } = req.body;
     const { _id } = req.authUser;
-    const hashedPassword = bcrypt.hashSync(password, process.env.SALT_ROUNDS);
+    const hashedPassword = bcrypt.hashSync(password, +process.env.SALT_ROUNDS);
     const hashedConfirmPassword = bcrypt.hashSync(
         confirmPassword,
-        process.env.SALT_ROUNDS
+        +process.env.SALT_ROUNDS
     );
     const user = await User.findOneAndUpdate(
         _id,
@@ -374,7 +374,7 @@ const resetPassword = async (req, res, next) => {
     }
     const hashedNewPassword = bcrypt.hashSync(
         newPassword,
-        process.env.SALT_ROUNDS
+        +process.env.SALT_ROUNDS
     );
     user.password = hashedNewPassword;
     user.resetPasswordOtp = undefined;
