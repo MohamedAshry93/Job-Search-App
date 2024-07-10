@@ -12,6 +12,7 @@ import {
     getCompanySchema,
     updatedCompanySchema,
 } from "./company.schema.js";
+import { checkCompanyExist } from "../../Middlewares/checkData.middleware.js";
 
 const companyRouter = Router();
 
@@ -20,6 +21,7 @@ companyRouter.post(
     errorHandling(authMiddleware()),
     errorHandling(authorizationMiddleware(roles.COMPANY_ROLES_HR)),
     errorHandling(validationMiddleware(addCompanySchema)),
+    errorHandling(checkCompanyExist),
     errorHandling(companyController.addCompany)
 );
 

@@ -23,7 +23,11 @@ const signUpSchema = {
     }),
 };
 signUpSchema.body = signUpSchema.body.append({
-    role: Joi.string().optional().valid(systemRoles.USER, systemRoles.COMPANY_HR),
+    role: Joi.string().optional().valid(systemRoles.USER, systemRoles.COMPANY_HR).messages({
+        "string.base": "role must be a string",
+        "any.only": "role must be one of the following: User, Company_HR",
+        "string.empty": "role cannot be an empty string",
+    }),
     status: Joi.string().optional().valid("online", "offline"),
 });
 

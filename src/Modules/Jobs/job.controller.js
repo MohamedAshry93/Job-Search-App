@@ -67,6 +67,7 @@ const deleteJob = async (req, res, next) => {
     if (!job) {
         return next(new ErrorHandlerClass("Job not found", 404));
     }
+    await App.findOneAndDelete({ jobId: _id });
     res.status(200).json({ message: "Job deleted successfully", job });
 };
 
@@ -86,7 +87,6 @@ const listJobs = async (req, res, next) => {
         );
     }
     const jobIds = jobs.map((job) => job.addedBy);
-    console.log(jobIds);
     const company = await Company.find({ companyHR: { $in: jobIds } });
     if (company.length == 0) {
         return next(

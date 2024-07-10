@@ -19,9 +19,9 @@ const globalResponse = (err, req, res, next) => {
         res.status(err.statusCode || 500).json({
             message: "Internal server error",
             error: err.message,
-            location: err.stack,
+            location: err.data,
             name: err.name,
-            data: err.data,
+            data: err.stack,
         });
     }
 };

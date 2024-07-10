@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import User from "../../../database/Models/user.model.js";
 import ErrorHandlerClass from "../../Utils/error-class.utils.js";
 import { sendEmailService } from "../../Services/send-email.service.js";
+import Company from "../../../database/Models/company.model.js";
+import Job from "../../../database/Models/job.model.js";
+import App from "../../../database/Models/application.model.js";
 
 //! ========================================== Registration ========================================== //
 const signUp = async (req, res, next) => {
@@ -236,8 +239,27 @@ const updatedAccount = async (req, res, next) => {
 //! ==================================== Delete account by his user ==================================== //
 const deletedAccount = async (req, res, next) => {
     const { _id } = req.authUser;
-    const user = await User.findByIdAndDelete(_id);
-    res.status(200).json({ message: "User deleted successfully", user });
+    const user = await User.findById(_id);
+    if (user.role == "Company_HR") {
+        await Company.findOneAndDelete({ companyHR: _id });
+        await Job.findOneAndDelete({ addedBy: _id });
+        await User.findByIdAndDelete(_id);
+    }
+    if (user.role == "User") {
+        await App.deleteMany({ userId: _id });
+    }
+    res.status(200).json({
+        message: "User deleted successfully",
+        userData: {
+            id: user._id,
+            name: user.userName,
+            email: user.email,
+            recoveryEmail: user.recoveryEmail,
+            mobile: user.mobileNumber,
+            role: user.role,
+            verified: user.verified,
+        },
+    });
 };
 
 //! ====================================== Get user account data ====================================== //
