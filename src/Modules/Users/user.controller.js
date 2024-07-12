@@ -111,7 +111,7 @@ const verifyEmail = async (req, res, next) => {
             new ErrorHandlerClass(
                 "Invalid verification link",
                 404,
-                "at checking confirmedAuthor",
+                "at checking confirmedUser",
                 "Error in verifyEmail controller",
                 { token }
             )
@@ -129,7 +129,6 @@ const signIn = async (req, res, next) => {
         $or: [{ email }, { recoveryEmail }, { mobileNumber }],
     });
     if (!user) {
-        console.log(user);
         return next(
             new ErrorHandlerClass(
                 "Invalid Login credentials",

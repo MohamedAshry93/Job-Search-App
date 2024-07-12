@@ -52,7 +52,7 @@ const authMiddleware = () => {
                 new ErrorHandlerClass(
                     "Please signUp and try to logIn again",
                     401,
-                    "at findAuthorById",
+                    "at findUserById",
                     "Error in auth middleware",
                     { userId: decodedData.userId }
                 )
