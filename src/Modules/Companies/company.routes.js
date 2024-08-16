@@ -3,8 +3,9 @@ import * as companyController from "./company.controller.js";
 import { errorHandling } from "../../Middlewares/error-handle.middleware.js";
 import { authMiddleware } from "../../Middlewares/auth.middleware.js";
 import { authorizationMiddleware } from "../../Middlewares/authorization.middleware.js";
-import roles from "./company.roles.js";
 import validationMiddleware from "../../Middlewares/validation.middleware.js";
+import roles from "./company.roles.js";
+import { checkCompanyExist } from "../../Middlewares/checkData.middleware.js";
 import {
     addCompanySchema,
     deletedCompanySchema,
@@ -12,7 +13,6 @@ import {
     getCompanySchema,
     updatedCompanySchema,
 } from "./company.schema.js";
-import { checkCompanyExist } from "../../Middlewares/checkData.middleware.js";
 
 const companyRouter = Router();
 

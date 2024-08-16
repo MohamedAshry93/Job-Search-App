@@ -3,8 +3,8 @@ import * as jobController from "./job.controller.js";
 import { errorHandling } from "../../Middlewares/error-handle.middleware.js";
 import { authMiddleware } from "../../Middlewares/auth.middleware.js";
 import { authorizationMiddleware } from "../../Middlewares/authorization.middleware.js";
-import roles from "./job.roles.js";
 import validationMiddleware from "../../Middlewares/validation.middleware.js";
+import roles from "./job.roles.js";
 import {
     addApplicationSchema,
     addJobSchema,

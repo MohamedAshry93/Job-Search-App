@@ -6,6 +6,7 @@ import { sendEmailService } from "../../Services/send-email.service.js";
 import Company from "../../../database/Models/company.model.js";
 import Job from "../../../database/Models/job.model.js";
 import App from "../../../database/Models/application.model.js";
+import { cloudinaryConfig } from "../../Utils/cloudinary.utils.js";
 
 //! ========================================== Registration ========================================== //
 const signUp = async (req, res, next) => {
@@ -19,8 +20,16 @@ const signUp = async (req, res, next) => {
         DOB,
         mobileNumber,
         role,
-        status,
     } = req.body;
+    if (!req.file) {
+        return next(new ErrorHandlerClass("Profile image is not found", 400));
+    }
+    const dataUploaded = await cloudinaryConfig().uploader.upload(req.file.path, {
+        folder: "Cloud/Users",
+        resource_type: "image",
+        use_filename: true,
+        tags: ["profileImage"],
+    });
     const hashedPassword = bcrypt.hashSync(password, +process.env.SALT_ROUNDS);
     const hashedConfirmPassword = bcrypt.hashSync(
         confirmPassword,
@@ -37,7 +46,7 @@ const signUp = async (req, res, next) => {
         DOB,
         mobileNumber,
         role,
-        status,
+        profileImage: req.file.path,
     });
     const token = jwt.sign(
         {
@@ -50,14 +59,14 @@ const signUp = async (req, res, next) => {
         { expiresIn: "1h" }
     );
     const confirmationLink = `${req.protocol}://${req.headers.host}/users/verify-email/${token}`;
-    const isEmailSent = await sendEmailService(
-        email,
-        recoveryEmail,
-        "Welcome to Our App - Verify your email address",
-        "Please verify your email address",
-        `<a href=${confirmationLink}>Please verify your email address</a>`
-    );
-    if (!isEmailSent) {
+    const isEmailSent = await sendEmailService({
+        to: email,
+        cc: recoveryEmail,
+        subject: "Welcome to Our App - Verify your email address",
+        text: "Please verify your email address",
+        html: `<a href=${confirmationLink}>Please verify your email address</a>`,
+    });
+    if (!isEmailSent.accepted.length) {
         return next(
             new ErrorHandlerClass(
                 "Verification sending email is failed, please try again",
@@ -71,6 +80,7 @@ const signUp = async (req, res, next) => {
     const user = await userInstance.save();
     res.status(201).json({
         message: "User created successfully",
+        dataUploaded,
         userData: {
             id: user._id,
             name: user.userName,
@@ -143,7 +153,7 @@ const signIn = async (req, res, next) => {
             new ErrorHandlerClass(
                 "Invalid Login credentials",
                 401,
-                "at comparing password",
+                "at checking user",
                 "Error in signIn controller"
             )
         );
@@ -196,6 +206,7 @@ const updatedAccount = async (req, res, next) => {
         { new: true }
     );
     if (email) {
+        user.verified = false;
         const token = jwt.sign(
             {
                 userId: user._id,
@@ -207,19 +218,20 @@ const updatedAccount = async (req, res, next) => {
             { expiresIn: "1h" }
         );
         const confirmationLink = `${req.protocol}://${req.headers.host}/users/verify-email/${token}`;
-        const isEmailSent = await sendEmailService(
-            email,
-            "Welcome to Our App - Verify your email address",
-            "Please verify your email address",
-            `<a href=${confirmationLink}>Please verify your email address</a>`
-        );
-        if (!isEmailSent) {
+        const isEmailSent = await sendEmailService({
+            to: email,
+            cc: recoveryEmail,
+            subject: "Welcome to Our App - Verify your email address",
+            text: "Please verify your email address",
+            html: `<a href=${confirmationLink}>Please verify your email address</a>`,
+        });
+        if (!isEmailSent.accepted.length) {
             return next(
                 new ErrorHandlerClass(
                     "Verification sending email is failed, please try again",
                     400,
                     "at checking isEmailSent",
-                    "Error in updatedAccount controller",
+                    "Error in signUp controller",
                     { email }
                 )
             );
@@ -229,7 +241,7 @@ const updatedAccount = async (req, res, next) => {
         message: "User updated successfully",
         userData: {
             id: user._id,
-            name: user.name,
+            name: user.userName,
             verified: user.verified,
         },
     });
@@ -351,27 +363,31 @@ const forgetPassword = async (req, res, next) => {
         );
     }
     const otp = Math.floor(100000 + Math.random() * 900000);
-    user.resetPasswordOtp = otp;
-    user.resetPasswordExpires = Date.now() + 3600000;
+    const hashedOtp = bcrypt.hashSync(otp.toString(), +process.env.SALT_ROUNDS);
     const isEmailSent = await sendEmailService(
-        `${email} ${recoveryEmail}`,
-        "Welcome to Our App - Password Reset OTP",
-        "Password Reset OTP",
-        `<b>Your OTP for password reset is:</b> ${otp}`
+        {
+            to: `${email} ${recoveryEmail}`,
+            subject: "Welcome to Our App - Password Reset OTP",
+            text: "Password Reset OTP",
+            html: `<b>Your OTP for password reset is:</b> ${otp}`
+        }
     );
-    if (!isEmailSent) {
+    if (!isEmailSent.accepted.length) {
         return next(
             new ErrorHandlerClass(
                 "Verification sending email is failed, please try again",
                 400,
                 "at checking isEmailSent",
-                "Error in signUp controller",
+                "Error in forget password controller",
                 { email }
             )
         );
     }
+    user.resetPasswordOtp = hashedOtp;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    user.resetPasswordVerified = false;
     await user.save();
-    res.status(200).json({ message: "OTP sent successfully", otp });
+    res.status(200).json({ message: "OTP sent successfully", otp: hashedOtp });
 };
 
 //! ========================================= Reset password ========================================= //
@@ -379,7 +395,6 @@ const resetPassword = async (req, res, next) => {
     const { email, otp, newPassword } = req.body;
     const user = await User.findOne({
         email,
-        resetPasswordOtp: otp,
         resetPasswordExpires: { $gt: Date.now() },
     });
     if (!user) {
@@ -393,6 +408,17 @@ const resetPassword = async (req, res, next) => {
             )
         );
     }
+    if (!compareSync(otp.toString(), user.resetPasswordOtp)) {
+        return next(
+            new ErrorHandlerClass(
+                "Invalid OTP",
+                400,
+                "at checking otp",
+                "Error in resetPassword controller",
+                { otp }
+            )
+        );
+    }
     const hashedNewPassword = bcrypt.hashSync(
         newPassword,
         +process.env.SALT_ROUNDS
@@ -400,6 +426,7 @@ const resetPassword = async (req, res, next) => {
     user.password = hashedNewPassword;
     user.resetPasswordOtp = undefined;
     user.resetPasswordExpires = undefined;
+    user.resetPasswordVerified = true;
     await user.save();
     res.status(200).json({ message: "Password reset successfully" });
 };

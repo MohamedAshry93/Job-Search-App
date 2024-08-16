@@ -68,8 +68,11 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+        profileImage: String,
         resetPasswordOtp: String,
         resetPasswordExpires: Date,
+        resetPasswordVerified: Boolean,
+        passwordChangeAt: Date,
     },
     { timestamps: true, versionKey: "version_key" }
 );

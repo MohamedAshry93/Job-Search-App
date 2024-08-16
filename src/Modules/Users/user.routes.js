@@ -4,6 +4,8 @@ import { errorHandling } from "../../Middlewares/error-handle.middleware.js";
 import { checkDataExist } from "../../Middlewares/checkData.middleware.js";
 import { authMiddleware } from "../../Middlewares/auth.middleware.js";
 import validationMiddleware from "../../Middlewares/validation.middleware.js";
+import { multerHostMiddleware } from "../../Middlewares/multer.middleware.js";
+import extensions from "../../Utils/file-extensions.utils.js";
 import {
     allAccountSchema,
     forgetPasswordSchema,
@@ -19,6 +21,11 @@ const userRouter = Router();
 
 userRouter.post(
     "/signup",
+    errorHandling(
+        multerHostMiddleware({
+            allowedExtensions: extensions.IMAGE_EXTENSIONS,
+        }).single("image")
+    ),
     errorHandling(validationMiddleware(signUpSchema)),
     errorHandling(checkDataExist),
     errorHandling(userController.signUp)

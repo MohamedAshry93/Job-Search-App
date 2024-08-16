@@ -1,6 +1,6 @@
 import express from "express";
 import { config } from "dotenv";
-import path from 'path';
+import path from "path";
 
 import ErrorHandlerClass from "./src/Utils/error-class.utils.js";
 import { globalResponse } from "./src/Middlewares/error-handle.middleware.js";
@@ -24,6 +24,7 @@ app.use(express.json());
 app.use("/users", userRouter);
 app.use("/companies", companyRouter);
 app.use("/jobs", jobRouter);
+app.use("src/uploads", express.static(path.resolve("src/uploads")));
 
 connectionDB();
 
